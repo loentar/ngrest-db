@@ -1,0 +1,14 @@
+project (ngrestdbcommon CXX)
+
+set (PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+FILE(GLOB NGRESTDBCOMMON_SOURCES ${PROJECT_SOURCE_DIR}/*.cpp)
+FILE(GLOB NGRESTDBCOMMON_HEADERS ${PROJECT_SOURCE_DIR}/*.h)
+
+file(COPY ${NGRESTDBCOMMON_HEADERS} DESTINATION ${PROJECT_INCLUDE_DIR}/ngrest/db/)
+
+add_definitions(-DNGRESTDB_COMMON_DLL_EXPORTS)
+
+add_library(ngrestdbcommon SHARED ${NGRESTDBCOMMON_SOURCES})
+
+target_link_libraries(ngrestdbcommon ngrestutils)

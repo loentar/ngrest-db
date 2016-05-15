@@ -1,2 +1,2 @@
 # ngrest-db
-Simple ORM intended to use with ngrest
+Simple ORM to use with ngrest

@@ -1,0 +1,10 @@
+../ngrest-db-build/deploy/include
+../../ngrest-db-build/deploy/include
+../../../ngrest-db-build/deploy/include
+../../../../ngrest-db-build/deploy/include
+../../../../../ngrest-db-build/deploy/include
+../ngrest-build/deploy/include
+../../ngrest-build/deploy/include
+../../../ngrest-build/deploy/include
+../../../../ngrest-build/deploy/include
+../../../../../ngrest-build/deploy/include
