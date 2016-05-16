@@ -14,6 +14,8 @@ struct User
     int id;
 
     std::string name;
+
+    // *unique: true
     std::string email;
 
     // default: CURRENT_TIMESTAMP

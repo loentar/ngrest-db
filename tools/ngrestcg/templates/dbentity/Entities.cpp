@@ -111,6 +111,7 @@ Int\
             true, // not null
 ##endif
             $(.options.*pk||"false"), // pk
+            $(.options.*unique||"false"), // unique
             $(.options.*autoincrement||"false"), // autoincrement
 ##ifneq($(.options.*fk),) // fk
 ##var fkTable $(.options.fk.!token/ /)

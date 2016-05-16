@@ -35,7 +35,6 @@ void example1()
 #else
 #error no SQL driver available
 #endif
-//    ngrest::Db* db; /// FIXME!
     ngrest::Table<User> users(db);
 
     users.create();
