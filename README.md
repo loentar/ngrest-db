@@ -1,6 +1,6 @@
 # ngrest-db
 
-Small and easy in use ORM to use with ngrest.
+Small and easy in use ORM to work together with ngrest.
 
 
 Highlights:
@@ -22,12 +22,15 @@ Current stage: alpha, only basic features and only SQLite driver is implemented.
 // *table: users
 struct User
 {
+    // be default all the fields are not null
+
     // *pk: true
     // *autoincrenent: true
     int id;
 
-    // be default all fields are not null
     std::string name;
+
+    // *unique: true
     std::string email;
 };
 ```
