@@ -257,6 +257,11 @@ public:
         return res;
     }
 
+    inline int64_t lastInsertId()
+    {
+        return impl->lastInsertId();
+    }
+
 private:
     inline void bindNext(int)
     {

@@ -168,6 +168,12 @@ public:
         value = res ? res : "";
     }
 
+    int64_t lastInsertId()
+    {
+        NGREST_ASSERT(db->impl->conn, "Not Initialized");
+        return sqlite3_last_insert_rowid(db->impl->conn);
+    }
+
 };
 
 
@@ -240,12 +246,12 @@ std::string SQLiteDb::getCreateTableQuery(const Entity& entity) const
         fieldsStr += getTypeName(field.type) + " ";
         if (field.isPK)
             fieldsStr += "PRIMARY KEY ";
+        if (field.isAutoincrement)
+            fieldsStr += "AUTOINCREMENT ";
         if (field.isUnique)
             fieldsStr += "UNIQUE ";
         if (field.notNull)
             fieldsStr += "NOT NULL ";
-        if (field.isAutoincrement)
-            fieldsStr += "AUTOINCREMENT ";
     }
 
     return "CREATE TABLE IF NOT EXISTS " + entity.getTableName() + " (" + fieldsStr + ")";

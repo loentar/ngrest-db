@@ -10,7 +10,7 @@ namespace example {
 struct User
 {
     // *pk: true
-    // *autoincrenent: true
+    // *autoincrement: true
     int id;
 
     std::string name;
@@ -26,7 +26,7 @@ struct User
 struct Group
 {
     // *pk: true
-    // *autoincrenent: true
+    // *autoincrement: true
     int id;
 
     std::string name;
@@ -36,7 +36,7 @@ struct Group
 struct UserToGroup
 {
     // *pk: true
-    // *autoincrenent: true
+    // *autoincrement: true
     int id;
 
     // *fk: users id

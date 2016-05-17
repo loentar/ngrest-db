@@ -156,7 +156,7 @@ namespace ngrest {
 template <>
 const Entity& getEntityByDataType< $(.nsName) >()
 {
-    static const ::ngrest::example::$(.name)Entity entity;
+    static const $(.nsName)Entity entity;
     return entity;
 }
 

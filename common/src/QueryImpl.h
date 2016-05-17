@@ -53,6 +53,8 @@ public:
     virtual int64_t resultBigInt(int column) = 0;
     virtual double resultFloat(int column) = 0;
     virtual void resultString(int column, std::string& value) = 0;
+
+    virtual int64_t lastInsertId() = 0;
 };
 
 } // namespace ngrest

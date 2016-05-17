@@ -84,10 +84,20 @@ public:
     };
 
 public:
-    Table(Db& db_):
+    Table(Db& db_, bool ignoreAutoincFieldsOnInsert = true):
         db(db_),
         entity(getEntityByDataType<DataType>())
     {
+        if (ignoreAutoincFieldsOnInsert) {
+            // find any autoincrement fields and ignore it
+            for (const Field& field : entity.getFields()) {
+                if (field.isAutoincrement) {
+                    insertFields.insert(field.name);
+                }
+            }
+            if (!insertFields.empty())
+                insertInclusion = FieldsInclusion::Exclude;
+        }
     }
 
     void create()
@@ -184,6 +194,11 @@ public:
     Table<DataType>& operator<<(const std::list<DataType>& items)
     {
         return insert(items);
+    }
+
+    int64_t lastInsertId()
+    {
+        return Query(db).lastInsertId();
     }
 
     // select

@@ -42,9 +42,12 @@ void example1()
     users.deleteAll(); // delete all data from the table
 
     // exclude "id" from the fields when inserting to perform auto-increment
-    users.setInsertFieldsInclusion({"id"}, ngrest::FieldsInclusion::Exclude);
+    // enabled by default
+//    users.setInsertFieldsInclusion({"id"}, ngrest::FieldsInclusion::Exclude);
 
     users.insert({0, "John", "john@example.com", 0}); // id is ignored upon insertion
+
+    LogInfo() << "Last insert id: " << users.lastInsertId();
 
     User user = {0, "James", "james@example.com", 1};
     users.insert(user);
