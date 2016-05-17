@@ -1,0 +1,15 @@
+#example on command extension point:
+#extensions[db]="Short db description
+#Full Help on db ..
+#Some useful info
+#detailed description on how to use"
+#
+#db() {
+#  echo "I'm db".
+#}
+
+# this can do something useful if extension active
+#if [ -n "$active" ]
+#then
+#  echo "I'm active in this project"
+#fi

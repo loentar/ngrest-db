@@ -1,0 +1,98 @@
+#!/bin/bash
+
+set -eu
+
+# ngrest-db trigger
+
+help() {
+  echo "Usage:"
+  echo "  ngrest add loentar/ngrest-db <driver>" >&2
+  echo "  ngrest remove loentar/ngrest-db" >&2
+  echo "  supported drivers are: sqlite" >&2
+}
+
+if [ -z "${1:-}" ]
+then
+  echo "Action omitted." >&2
+  help
+  exit 1
+fi
+
+services=($(<.ngrest/services))
+
+case $1 in
+  add)
+    if [ -z "${2:-}" ]
+    then
+      echo "DB driver omitted." >&2
+      help
+      exit 1
+    fi
+
+    if [ "$2" != "sqlite" ]
+    then
+      echo "Unsupported DB driver: $2." >&2
+      help
+      exit 1
+    fi
+
+    for service in ${services[@]}
+    do
+      # bash 3.1 compat
+      service_lo=$(tr '[:upper:]' '[:lower:]' <<< "$service")
+      service_up=$(tr '[:lower:]' '[:upper:]' <<< "$service")
+      cp -f $service_lo/CMakeLists.txt $service_lo/CMakeLists.txt~
+      tmp=$(mktemp)
+      cat >$tmp << EOF
+### ngrest-db BEGIN
+
+FUNCTION(CODEGEN_FILES_DB outVar prefix)
+   SET(listVar "")
+   FOREACH(file \${ARGN})
+      get_filename_component(fileBase "\${file}" NAME_WE)
+      LIST(APPEND listVar "\${prefix}/\${fileBase}Entities.h")
+      LIST(APPEND listVar "\${prefix}/\${fileBase}Entities.cpp")
+   ENDFOREACH(file)
+   SET(\${outVar} "\${listVar}" PARENT_SCOPE)
+ENDFUNCTION(CODEGEN_FILES_DB)
+
+
+set(${service_up}_DB_CODEGEN_DIR "\${PROJECT_BINARY_DIR}/codegen-ngrest-db")
+
+PREPEND(${service_up}_DB_HEADERS_PATHS \${PROJECT_SOURCE_DIR} \${${service_up}_HEADERS})
+
+CODEGEN_FILES_DB(${service_up}_DB_CODEGEN_SOURCES \${${service_up}_DB_CODEGEN_DIR} \${${service_up}_HEADERS})
+
+add_custom_command(OUTPUT \${${service_up}_DB_CODEGEN_SOURCES}
+    COMMAND \${NGREST_BIN_PATH}ngrestcg -i "\${PROJECT_SOURCE_DIR}" -o \${${service_up}_DB_CODEGEN_DIR} -t dbentity \${${service_up}_HEADERS}
+    DEPENDS \${${service_up}_HEADERS_PATHS}
+)
+
+list(APPEND ${service_up}_SOURCES \${${service_up}_DB_CODEGEN_SOURCES})
+
+include_directories(\${PROJECT_SOURCE_DIR} \${${service_up}_DB_CODEGEN_DIR})
+
+### ngrest-db END
+EOF
+
+      sed -i '/list.*APPEND.*CODEGEN_SOURCES/r '"$tmp" $service_lo/CMakeLists.txt
+      rm -f "$tmp"
+      cat >>$service_lo/CMakeLists.txt << EOF
+### ngrest-db BEGIN
+
+target_link_libraries(${service_lo} ngrestdbcommon ngrestdb$2)
+
+### ngrest-db END
+EOF
+    done
+
+    ;;
+
+  remove)
+    for service in ${services[@]}
+    do
+      service_lo=$(tr '[:upper:]' '[:lower:]' <<< "$service")
+      sed -i~ '/### ngrest-db BEGIN/,/### ngrest-db END/d' $service_lo/CMakeLists.txt
+    done
+    ;;
+esac
