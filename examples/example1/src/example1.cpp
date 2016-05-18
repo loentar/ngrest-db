@@ -88,6 +88,11 @@ void example1()
 //        {"id", "name", "email"});
 
 
+    // select just one field: all ids
+    const std::list<int>& resRawIds = users.selectTuple<int>({"id"});
+    std::cout << resRawIds << std::endl;
+
+
     typedef std::tuple<int, std::string, std::string> UserInfo;
 
 //    const std::list<std::tuple<int, std::string, std::string>>& resRaw1 =

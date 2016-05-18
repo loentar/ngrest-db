@@ -225,6 +225,12 @@ public:
         resultNext<std::tuple<Types...>, Types...>(tuple);
     }
 
+    template <typename Type>
+    inline void resultAll(Type& value)
+    {
+        result(0, value);
+    }
+
     inline bool resultBool(int column)
     {
         return impl->resultBool(column);

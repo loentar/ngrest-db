@@ -299,7 +299,6 @@ public:
 
         query.prepare(queryStr);
         query.bindAll(params...);
-        NGREST_ASSERT(query.next(), "Error executing query: no more rows");
 
         std::list<Tuple> result;
         Tuple data;
@@ -311,10 +310,10 @@ public:
         return result;
     }
 
-    template<typename Tuple, typename... Params>
+    template<typename Tuple>
     std::list<Tuple> selectTuple(const std::list<std::string>& rowNames)
     {
-        return selectTuple(rowNames, std::string());
+        return selectTuple<Tuple>(rowNames, std::string());
     }
 
     // select one
