@@ -4,12 +4,11 @@ Small and easy in use ORM to work together with ngrest.
 
 
 Highlights:
- - C++ structures are associated with DB tables
+ - mapping the developer-provided structures to database tables
  - easy and intuitive syntax to perform most used db operations
  - code generator for maximum comfort and speed of development
  - use the meta-comments to provide additional, database-specific functionality (PK, FK, UNIQUE, etc..)
- - automatic mapping the developer-provided structures to database tables
- - easily integrated with ngrest services
+ - easy to integrate with ngrest services
 
 Current stage: alpha, only basic features and only SQLite driver is implemented.
 
@@ -130,12 +129,181 @@ std::cout << id << " " << name << " " << email << std::endl;
 
 ```
 
+## Installation
+
+Must have ngrest installed: https://github.com/loentar/ngrest.
+
+No special install command needed. To add this package to your project type from project directory:
+
+```
+ngrest add loentar/ngrest-db sqlite
+```
+
+## Example on how to use ngrest-db with ngrest service
+
+Create service:
+
+```
+ngrest create Notes
+```
+
+Add ngrest-db package
+```
+cd notes
+ngrest add loentar/ngrest-db sqlite
+```
+
+Make your `notes/src/Notes.h` look like this:
+
+```C++
+#ifndef NOTES_H
+#define NOTES_H
+
+#include <list>
+#include <unordered_map>
+#include <ngrest/common/Service.h>
+
+// *table: notes
+struct Note
+{
+    // *pk: true
+    // *autoincrement: true
+    int id;
+
+    // *unique: true
+    std::string title;
+
+    std::string text;
+};
+
+// *location: notes
+class Notes: public ngrest::Service
+{
+public:
+    //! add a note, returns inserted id
+    // *method: POST
+    int add(const std::string& title, const std::string& text);
+
+    //! remove node by id
+    // *method: DELETE
+    void remove(int id);
+
+    //! get note by id
+    Note get(int id);
+
+    //! get list of ids of all notes
+    std::list<int> ids();
+
+    //! get map of notes: id, title
+    std::unordered_map<int, std::string> list();
+
+    //! find notes containing title
+    std::list<Note> find(const std::string& title);
+};
+
+
+#endif // NOTES_H
+```
+
+
+And `notes/src/Notes.cpp` like this:
+
+```C++
+#include <ngrest/db/SQLiteDb.h>
+#include <ngrest/db/Table.h>
+
+#include "Notes.h"
+
+// singleton to access notes db
+class NotesDb
+{
+public:
+    static NotesDb& inst()
+    {
+        static NotesDb instance;
+        return instance;
+    }
+
+    ngrest::Db& db()
+    {
+        return notesDb;
+    }
+
+    ngrest::Table<Note>& notes()
+    {
+        return notesTable;
+    }
+
+private:
+    NotesDb():
+        notesDb("notes.db"),
+        notesTable(notesDb)
+    {
+        // perform DB initialization here
+        notesTable.create(); // create table if not exist
+    }
+
+    ngrest::SQLiteDb notesDb;
+    ngrest::Table<Note> notesTable;
+};
+
+
+int Notes::add(const std::string& title, const std::string& text)
+{
+    return NotesDb::inst().notes()
+            .insert({0, title, text})
+            .lastInsertId();
+}
+
+void Notes::remove(int id)
+{
+    NotesDb::inst().notes().deleteWhere("id = ?", id);
+}
+
+Note Notes::get(int id)
+{
+    return NotesDb::inst().notes().selectOne("id = ?", id);
+}
+
+std::list<int> Notes::ids()
+{
+    return NotesDb::inst().notes().selectTuple<int>({"id"});
+}
+
+std::unordered_map<int, std::string> Notes::list()
+{
+    // example of access to DB without using Table<>
+    std::unordered_map<int, std::string> result;
+
+    ngrest::Query query(NotesDb::inst().db());
+    query.prepare("SELECT id, title FROM notes");
+
+    while (query.next()) {
+        // read id from result(0), title from result(1)
+        query.resultString(1, result[query.resultInt(0)]);
+    }
+    return result;
+}
+
+std::list<Note> Notes::find(const std::string& title)
+{
+    return NotesDb::inst().notes().select("title LIKE ?", "%" + title + "%");
+}
+```
+
+Start your project from it's directory:
+
+```
+ngrest
+```
+
+Open ngrest services tester http://localhost:9098/ngrest/service/Notes and try implemented operations: add, get, find, etc...
+
+The DB will be stored in `.ngrest/local/build/notes.db`.
+
+
 ## TODO: 
- - installation using ngrest script like `ngrest install loentar/ngrest-db`
- - integrate into ngrest script as plugin to generate project files with ngrest-db support and other actions
  - implement MySQL driver
  - implement PostgreSQL driver
  - implement nullable, needs ngrest support
  - implement JOINs
-
-
