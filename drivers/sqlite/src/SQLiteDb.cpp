@@ -42,7 +42,6 @@ class SQLiteQueryImpl: public QueryImpl
 private:
     SQLiteDb* db;
     sqlite3_stmt* result = nullptr;
-    int lastStepStatus = 0;
     unsigned fieldsCount = 0;
 
 public:
@@ -116,19 +115,19 @@ public:
 
     void bindString(int arg, const std::string& value) override
     {
-        assertBindRes(sqlite3_bind_text(result, arg + 1, value.c_str(), value.size(), SQLITE_STATIC));
+        assertBindRes(sqlite3_bind_text(result, arg + 1, value.c_str(), value.size(), SQLITE_TRANSIENT));
     }
 
     bool next() override
     {
-        NGREST_ASSERT(result, "No statement prepared. Use prepare().");
+        NGREST_ASSERT(result, "No statement prepared. Use prepare() before calling next().");
 
-        lastStepStatus = sqlite3_step(result);
-        if (lastStepStatus == SQLITE_ROW)
+        int status = sqlite3_step(result);
+        if (status == SQLITE_ROW)
             return true;
 
-        NGREST_ASSERT(lastStepStatus == SQLITE_DONE || lastStepStatus == SQLITE_OK,
-                      "error #" + toString(lastStepStatus) + ": "
+        NGREST_ASSERT(status == SQLITE_DONE || status == SQLITE_OK,
+                      "error #" + toString(status) + ": "
                       + std::string(sqlite3_errmsg(db->impl->conn))
                       + "; db: \"" + db->impl->dbPath + "\""
                       + "\nWhile executing query: \n----------\n"
@@ -252,6 +251,8 @@ std::string SQLiteDb::getCreateTableQuery(const Entity& entity) const
             fieldsStr += "UNIQUE ";
         if (field.notNull)
             fieldsStr += "NOT NULL ";
+        if (!field.defaultValue.empty())
+            fieldsStr += "DEFAULT " + field.defaultValue;
     }
 
     return "CREATE TABLE IF NOT EXISTS " + entity.getTableName() + " (" + fieldsStr + ")";

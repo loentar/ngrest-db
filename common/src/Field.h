@@ -49,6 +49,7 @@ struct Field
     };
 
     DataType type;
+    std::string dbType; // DBMS specific type, e.g. VARCHAR(64). can be empty
     std::string name;
     std::string defaultValue;
     bool notNull;

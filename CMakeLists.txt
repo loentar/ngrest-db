@@ -92,6 +92,14 @@ else()
     message("No sqlite.h file found. SQLite driver disabled")
 endif()
 
+# MySQL
+check_include_file_cxx(mysql/mysql.h HAS_MYSQL)
+if (HAS_MYSQL)
+    add_definitions(-DHAS_MYSQL)
+else()
+    message("No mysql.h file found. MySQL driver disabled")
+endif()
+
 
 ##
 add_subdirectory(common)

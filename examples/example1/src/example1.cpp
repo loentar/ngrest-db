@@ -6,6 +6,9 @@
 #ifdef HAS_SQLITE
 #include <ngrest/db/SQLiteDb.h>
 #endif
+#ifdef HAS_MYSQL
+#include <ngrest/db/MySqlDb.h>
+#endif
 #include <ngrest/db/Table.h>
 
 #include "datatypes.h"
@@ -26,15 +29,8 @@ namespace example {
 
 
 
-void example1()
+void example1(Db& db)
 {
-#ifdef HAS_SQLITE
-    ngrest::SQLiteDb db("test.db");
-#elif HAS_MYSQL
-    ngrest::MySqlDb db("localhost", 5600, "test");
-#else
-#error no SQL driver available
-#endif
     ngrest::Table<User> users(db);
 
     users.create();
@@ -47,9 +43,10 @@ void example1()
 
     users.insert({0, "John", "john@example.com", 0}); // id is ignored upon insertion
 
-    LogInfo() << "Last insert id: " << users.lastInsertId();
+    int id = users.lastInsertId();
+//    LogInfo() << "Last insert id: " << id;
 
-    User user = {0, "James", "james@example.com", 1};
+    User user = {0, "James", "james@example.com", 0};
     users.insert(user);
     // users.insert(user, {"id", "registered"}, ngrest::FieldsInclusion::Exclude); // for example
 
@@ -64,10 +61,16 @@ void example1()
 
     // select all
     const std::list<User>& resList0 = users.select();
+    NGREST_ASSERT(resList0.size() == 4, "Test failed");
+
     // select query
-    const std::list<User>& resList1 = users.select("id = ?", 1);
+    const std::list<User>& resList1 = users.select("id = ?", id);
+    NGREST_ASSERT(resList1.size() == 1, "Test failed");
+
     // select query and 2 parameters
-    const std::list<User>& resList2 = users.select("id = ? AND name LIKE ?", 1, "%Ja%");
+    const std::list<User>& resList2 = users.select("id >= ? AND name LIKE ?", 0, "Ja%");
+    NGREST_ASSERT(resList2.size() == 3, "Test failed");
+
     // select query and IN statement
 //    const std::list<User>& resList3 = users.select("id IN ?", std::list<int>{1, 2, 3});
     // select query and IN statement
@@ -75,11 +78,15 @@ void example1()
 //            std::list<int>{1, 2, 3}, "%Ja%");
     // select all items, desired fields
     const std::list<User>& resList5 = users.selectFields({"id", "name"}, "");
+    NGREST_ASSERT(resList5.size() == 4, "Test failed");
+
     // select desired fields with query
-    const std::list<User>& resList6 = users.selectFields({"id", "name"}, "id = ?", 1);
+    const std::list<User>& resList6 = users.selectFields({"id", "name"}, "id = ?", id);
+    NGREST_ASSERT(resList6.size() == 1, "Test failed");
 
 
-    const User& resOne2 = users.selectOne("id = ?", 1);
+    const User& resOne2 = users.selectOne("id = ?", id);
+    NGREST_ASSERT(resOne2.id == id, "Test failed");
 
 
 
@@ -90,7 +97,7 @@ void example1()
 
     // select just one field: all ids
     const std::list<int>& resRawIds = users.selectTuple<int>({"id"});
-    std::cout << resRawIds << std::endl;
+    NGREST_ASSERT(resRawIds.size() == 4, "Test failed");
 
 
     typedef std::tuple<int, std::string, std::string> UserInfo;
@@ -101,7 +108,8 @@ void example1()
 
     // equals to resRaw1
     const std::list<UserInfo>& resRaw2 =
-            users.selectTuple<UserInfo>({"id", "name", "email"}, "id = ?", 2);
+            users.selectTuple<UserInfo>({"id", "name", "email"}, "id = ?", id + 1);
+    NGREST_ASSERT(resRaw2.size() == 1, "Test failed");
 
     for (const UserInfo& info : resRaw2) {
         int id;
@@ -110,60 +118,62 @@ void example1()
 
         std::tie(id, name, email) = info;
 
-        std::cout << id << name << email << std::endl;
+//        std::cout << id << name << email << std::endl;
     }
 
 
     const UserInfo& resRaw3 = users.selectOneTuple<UserInfo>(
-                {"id", "name", "email"}, "id = ?", 2);
+                {"id", "name", "email"}, "id = ?", id + 1);
 
-    int id;
+    int resId;
     std::string name;
     std::string email;
 
-    std::tie(id, name, email) = resRaw3;
+    std::tie(resId, name, email) = resRaw3;
 
-    std::cout << id << " " << name << " " << email << std::endl;
+//    std::cout << resId << " " << name << " " << email << std::endl;
 
 
     // stream
 
-    User user1 = {0, "Martin", "martin@example.com", 1};
-    User user2 = {0, "Marta", "marta@example.com", 1};
+    User user1 = {0, "Martin", "martin@example.com", 0};
+    User user2 = {0, "Marta", "marta@example.com", 0};
 
     // insert
     users << user1 << user2;
 
     // select one item
-    users("id = ?", 1) >> user;
+    users("id = ?", id) >> user;
 
     // select multiple items
     std::list<User> userList1;
-    users("id <= ?", 3) >> userList1;
+    users("id <= ?", id + 2) >> userList1;
+    NGREST_ASSERT(userList1.size() == 3, "Test failed");
 
     // select all
     std::list<User> userList2;
     users() >> userList2;
+    NGREST_ASSERT(userList2.size() == 6, "Test failed");
 
 
-    std::cout
-    << resList0  << std::endl
-    << "--------------------------"  << std::endl
-    << resList1  << std::endl
-    << "--------------------------"  << std::endl
-    << resList2  << std::endl
-    << "--------------------------"  << std::endl
-    << resList5  << std::endl
-    << "--------------------------"  << std::endl
-    << resList6  << std::endl
-    << "--------------------------"  << std::endl
-    << resOne2   << std::endl
-    << "--------------------------"  << std::endl
-    << user << std::endl
-    << "--------------------------"  << std::endl
-    << userList1   << std::endl
-    << "--------------------------"  << std::endl
-    << userList2   << std::endl;
+//    std::cout
+//    << resList0  << std::endl
+//    << "--------------------------"  << std::endl
+//    << resList1  << std::endl
+//    << "--------------------------"  << std::endl
+//    << resList2  << std::endl
+//    << "--------------------------"  << std::endl
+//    << resList5  << std::endl
+//    << "--------------------------"  << std::endl
+//    << resList6  << std::endl
+//    << "--------------------------"  << std::endl
+//    << resOne2   << std::endl
+//    << "--------------------------"  << std::endl
+//    << user << std::endl
+//    << "--------------------------"  << std::endl
+//    << userList1   << std::endl
+//    << "--------------------------"  << std::endl
+//    << userList2   << std::endl;
 
 }
 
@@ -173,6 +183,20 @@ void example1()
 int main()
 {
     try {
-    ngrest::example::example1();
+#ifdef HAS_SQLITE
+        ngrest::SQLiteDb sqliteDb("test.db");
+        ngrest::example::example1(sqliteDb);
+        ngrest::LogInfo() << "SQLite driver test passed";
+#endif
+#ifdef HAS_MYSQL
+        // must have db and user created using statements:
+        //   CREATE DATABASE test_ngrestdb;
+        //   CREATE USER 'ngrestdb'@'localhost' IDENTIFIED BY 'ngrestdb';
+        //   GRANT ALL PRIVILEGES ON test_ngrestdb TO 'ngrestdb'@'localhost' WITH GRANT OPTION;
+
+        ngrest::MySqlDb mysqlDb({"test_ngrestdb", "ngrestdb", "ngrestdb"});
+        ngrest::example::example1(mysqlDb);
+        ngrest::LogInfo() << "MySQL driver test passed";
+#endif
     } NGREST_CATCH_ALL
 }

@@ -16,9 +16,11 @@ struct User
     std::string name;
 
     // *unique: true
+    // *type: varchar(64)
     std::string email;
 
-    // default: CURRENT_TIMESTAMP
+    // *type: timestamp
+    // *default: CURRENT_TIMESTAMP
     long registered;
 };
 

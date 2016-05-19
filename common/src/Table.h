@@ -56,23 +56,23 @@ public:
     class ResultStreamer
     {
     public:
-        ResultStreamer(QueryImpl* query_):
-            query(query_)
+        ResultStreamer(Table& table_):
+            table(table_)
         {
         }
 
         ResultStreamer& operator>>(DataType& item)
         {
-            NGREST_ASSERT(query.next(), "Error executing query: no more rows");
-            readDataFromQuery(query, item);
+            NGREST_ASSERT(table.query.next(), "Error executing query: no more rows");
+            readDataFromQuery(table.query, item);
             return *this;
         }
 
         ResultStreamer& operator>>(std::list<DataType>& result)
         {
             DataType data;
-            while (query.next()) {
-                readDataFromQuery(query, data);
+            while (table.query.next()) {
+                readDataFromQuery(table.query, data);
                 result.push_back(data);
             }
 
@@ -80,12 +80,13 @@ public:
         }
 
     private:
-        Query query;
+        Table& table;
     };
 
 public:
     Table(Db& db_, bool ignoreAutoincFieldsOnInsert = true):
         db(db_),
+        query(db_),
         entity(getEntityByDataType<DataType>())
     {
         if (ignoreAutoincFieldsOnInsert) {
@@ -102,7 +103,7 @@ public:
 
     void create()
     {
-        Query(db).query(db.getCreateTableQuery(entity));
+        query.query(db.getCreateTableQuery(entity));
     }
 
     void setInsertFieldsInclusion(const std::set<std::string>& fields, FieldsInclusion inclusion)
@@ -119,11 +120,13 @@ public:
     Table<DataType>& insert(const DataType& item)
     {
         if (insertInclusion == FieldsInclusion::NotSet) {
-            Query query(db);
+            query.reset();
+
             query.prepare("INSERT INTO " + entity.getTableName() + "(" + entity.getFieldsNamesStr() + ") "
                         + "VALUES" + entity.getFieldsArgs());
             bindDataToQuery(query, item);
             query.next();
+
             return *this;
         } else {
             return insert(item, insertFields, insertInclusion);
@@ -132,7 +135,7 @@ public:
 
     Table<DataType>& insert(const DataType& item, const std::set<std::string>& fields, FieldsInclusion inclusion)
     {
-        Query query(db);
+        query.reset();
 
         FieldsSet includedFields;
         std::string fieldsStr;
@@ -150,7 +153,7 @@ public:
 
     Table<DataType>& insert(const std::list<DataType>& items) {
         if (insertInclusion == FieldsInclusion::NotSet) {
-            Query query(db);
+            query.reset();
             query.prepare("INSERT INTO " + entity.getTableName() + "(" + entity.getFieldsNamesStr() + ") "
                         + "VALUES" + entity.getFieldsArgs());
             for (const DataType& item : items) {
@@ -167,7 +170,7 @@ public:
     Table<DataType>& insert(const std::list<DataType>& items, const std::set<std::string>& fields,
                 FieldsInclusion inclusion = FieldsInclusion::Include)
     {
-        Query query(db);
+        query.reset();
 
         FieldsSet includedFields;
         std::string fieldsStr;
@@ -198,7 +201,7 @@ public:
 
     int64_t lastInsertId()
     {
-        return Query(db).lastInsertId();
+        return query.lastInsertId();
     }
 
     // select
@@ -206,7 +209,7 @@ public:
     std::list<DataType> select()
     {
         std::list<DataType> result;
-        Query query(db);
+        query.reset();
         query.prepare("SELECT " + entity.getFieldsNamesStr() + " FROM " + entity.getTableName());
         DataType data;
         while (query.next()) {
@@ -220,7 +223,7 @@ public:
     template <typename... Params>
     std::list<DataType> select(const std::string& where, const Params... params)
     {
-        Query query(db);
+        query.reset();
         query.prepare("SELECT " + entity.getFieldsNamesStr() + " FROM " + entity.getTableName() + " WHERE " + where);
         query.bindAll(params...);
 
@@ -238,7 +241,7 @@ public:
     std::list<DataType> selectFields(const std::set<std::string>& fields, FieldsInclusion inclusion,
                                      const std::string& where, const Params... params)
     {
-        Query query(db);
+        query.reset();
 
         FieldsSet includedFields;
         std::string fieldsStr;
@@ -272,7 +275,7 @@ public:
     template <typename... Params>
     DataType selectOne(const std::string& where, const Params... params)
     {
-        Query query(db);
+        query.reset();
 
         query.prepare("SELECT " + entity.getFieldsNamesStr() + " FROM " + entity.getTableName()
                       + " WHERE " + where + " LIMIT 1");
@@ -292,7 +295,7 @@ public:
     std::list<Tuple> selectTuple(const std::list<std::string>& rowNames,
                                  const std::string& where, const Params... params)
     {
-        Query query(db);
+        query.reset();
         std::string queryStr = "SELECT " + join(rowNames) + " FROM " + entity.getTableName();
         if (!where.empty())
             queryStr += " WHERE " + where;
@@ -322,7 +325,7 @@ public:
     Tuple selectOneTuple(const std::list<std::string>& rowNames,
             const std::string& where, const Params... params)
     {
-        Query query(db);
+        query.reset();
 
         query.prepare("SELECT " + join(rowNames) + " FROM " + entity.getTableName() + " WHERE " + where + " LIMIT 1");
         query.bindAll(params...);
@@ -337,17 +340,17 @@ public:
     template <typename... Params>
     ResultStreamer operator()(const std::string& where, const Params... params)
     {
-        Query query(db);
+        query.reset();
         query.prepare("SELECT " + entity.getFieldsNamesStr() + " FROM " + entity.getTableName() + " WHERE " + where);
         query.bindAll(params...);
-        return ResultStreamer(query.take());
+        return ResultStreamer(*this);
     }
 
     ResultStreamer operator()()
     {
-        Query query(db);
+        query.reset();
         query.prepare("SELECT " + entity.getFieldsNamesStr() + " FROM " + entity.getTableName());
-        return ResultStreamer(query.take());
+        return ResultStreamer(*this);
     }
 
     // delete
@@ -355,7 +358,7 @@ public:
     template <typename... Params>
     void deleteWhere(const std::string& where, const Params... params)
     {
-        Query query(db);
+        query.reset();
         query.prepare("DELETE FROM " + entity.getTableName() + " WHERE " + where);
         query.bindAll(params...);
         query.next();
@@ -364,7 +367,7 @@ public:
     template <typename... Params>
     void deleteAll()
     {
-        Query query(db);
+        query.reset();
         query.query("DELETE FROM " + entity.getTableName());
     }
 
@@ -413,6 +416,7 @@ private:
 
 private:
     Db& db;
+    Query query;
     const Entity& entity;
     std::set<std::string> insertFields;
     FieldsInclusion insertInclusion = FieldsInclusion::NotSet;

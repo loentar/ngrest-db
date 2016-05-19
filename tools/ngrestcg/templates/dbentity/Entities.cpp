@@ -102,6 +102,7 @@ Int\
 ##error Cannot serialize type: $(.dataType)
 ##endswitch
 , // type
+            "$(.options.*type)", // DBMS type
             "$(.name)", // name
 ##ifeq($(.options.*null),true)
             "NULL", // default value

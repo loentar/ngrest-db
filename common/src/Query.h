@@ -122,6 +122,11 @@ public:
         impl->bindFloat(arg, value);
     }
 
+    inline void bind(int arg, const char* value)
+    {
+        impl->bindString(arg, value);
+    }
+
     inline void bind(int arg, const std::string& value)
     {
         impl->bindString(arg, value);

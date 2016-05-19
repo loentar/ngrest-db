@@ -10,7 +10,7 @@ Highlights:
  - use the meta-comments to provide additional, database-specific functionality (PK, FK, UNIQUE, etc..)
  - easy to integrate with ngrest services
 
-Current stage: alpha, only basic features and only SQLite driver is implemented.
+Current stage: alpha, only basic features and only SQLite and MySQL drivers are available.
 
  
 ## Quick tour
@@ -303,7 +303,6 @@ The DB will be stored in `.ngrest/local/build/notes.db`.
 
 
 ## TODO: 
- - implement MySQL driver
  - implement PostgreSQL driver
  - implement nullable, needs ngrest support
  - implement JOINs

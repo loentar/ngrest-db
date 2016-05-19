@@ -10,6 +10,9 @@ common/src/QueryImpl.cpp
 common/src/QueryImpl.h
 common/src/Table.h
 drivers/CMakeLists.txt
+drivers/mysql/CMakeLists.txt
+drivers/mysql/src/MySqlDb.cpp
+drivers/mysql/src/MySqlDb.h
 drivers/sqlite/CMakeLists.txt
 drivers/sqlite/src/SQLiteDb.cpp
 drivers/sqlite/src/SQLiteDb.h
@@ -18,6 +21,8 @@ examples/example1/CMakeLists.txt
 examples/example1/src/datatypes.h
 examples/example1/src/example1.cpp
 README.md
+scripts/ngrest-inject
+scripts/ngrest-trigger
 tools/CMakeLists.txt
 tools/ngrestcg/CMakeLists.txt
 tools/ngrestcg/templates/dbentity/codegen.config
