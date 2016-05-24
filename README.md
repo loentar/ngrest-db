@@ -10,9 +10,11 @@ Highlights:
  - use the meta-comments to provide additional, database-specific functionality (PK, FK, UNIQUE, etc..)
  - easy to integrate with ngrest services
 
-Current stage: alpha, only basic features and only SQLite and MySQL drivers are available.
+DBMS supported:
+ - SQLite3
+ - MySQL
+ - PostgreSQL
 
- 
 ## Quick tour
 
 **Example of C++ entity bound to DB table:**
@@ -303,6 +305,4 @@ The DB will be stored in `.ngrest/local/build/notes.db`.
 
 
 ## TODO: 
- - implement PostgreSQL driver
  - implement nullable, needs ngrest support
- - implement JOINs
