@@ -89,16 +89,14 @@ public:
         query(db_),
         entity(getEntityByDataType<DataType>())
     {
-        if (ignoreAutoincFieldsOnInsert) {
-            // find any autoincrement fields and ignore it
-            for (const Field& field : entity.getFields()) {
-                if (field.isAutoincrement) {
-                    insertFields.insert(field.name);
-                }
+        // find any autoincrement fields and ignore it
+        for (const Field& field : entity.getFields()) {
+            if (field.ignoreOnInsert || (field.isAutoincrement && ignoreAutoincFieldsOnInsert)) {
+                insertFields.insert(field.name);
             }
-            if (!insertFields.empty())
-                insertInclusion = FieldsInclusion::Exclude;
         }
+        if (!insertFields.empty())
+            insertInclusion = FieldsInclusion::Exclude;
     }
 
     void create()

@@ -21,7 +21,8 @@ struct User
 
     // *type: timestamp
     // *default: CURRENT_TIMESTAMP
-    long registered;
+    // *ignoreOnInsert: true
+    std::string registered;
 };
 
 // *table: groups

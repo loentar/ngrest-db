@@ -56,6 +56,7 @@ struct Field
     bool isPK;
     bool isUnique;
     bool isAutoincrement;
+    bool ignoreOnInsert;
     const ForeignKey* fk;
 };
 

@@ -13,6 +13,9 @@ drivers/CMakeLists.txt
 drivers/mysql/CMakeLists.txt
 drivers/mysql/src/MySqlDb.cpp
 drivers/mysql/src/MySqlDb.h
+drivers/postgres/CMakeLists.txt
+drivers/postgres/src/PostgresDb.cpp
+drivers/postgres/src/PostgresDb.h
 drivers/sqlite/CMakeLists.txt
 drivers/sqlite/src/SQLiteDb.cpp
 drivers/sqlite/src/SQLiteDb.h

@@ -89,7 +89,7 @@ private:
     MYSQL_STMT* stmt = nullptr;
     int fieldsCount = 0;
     bool isConnected = false;
-    bool doActualBind = true;
+    bool doExecPrepared = true;
     bool hasResult = false;
     MYSQL_BIND* result = nullptr;
     MemPool pool;
@@ -110,8 +110,8 @@ public:
 
         isConnected = true;
 
-        int nResult = mysql_set_character_set(&conn, "UTF8");
-        NGREST_ASSERT(nResult == 0, std::string("error setting encoding: ") + mysql_error(&conn));
+        int result = mysql_set_character_set(&conn, "UTF8");
+        NGREST_ASSERT(result == 0, std::string("error setting encoding: ") + mysql_error(&conn));
     }
 
     ~MySqlQueryImpl()
@@ -156,7 +156,7 @@ public:
         if (db->impl->supportedDmlStmt.find(dml) == db->impl->supportedDmlStmt.end()) {
             // execute query without using of stmt
             // no parameters are supported in that mode
-            doActualBind = false;
+            doExecPrepared = false;
             hasResult = false;
             int status = mysql_real_query(&conn, query.c_str(), query.size());
             NGREST_ASSERT(status == 0, "error executing query #" + toString(status) + ": \n"
@@ -182,7 +182,7 @@ public:
             bindParams = reinterpret_cast<MYSQL_BIND*>(pool.grow(sizeof(MYSQL_BIND) * paramCount));
             memset(bindParams, 0, sizeof(MYSQL_BIND) * paramCount);
 
-            doActualBind = true;
+            doExecPrepared = true;
             hasResult = true;
         }
         catch (...)
@@ -264,7 +264,7 @@ public:
 
         NGREST_ASSERT(stmt, "No statement prepared. Use prepare() before calling next().");
 
-        if (doActualBind) {
+        if (doExecPrepared) {
             NGREST_ASSERT(mysql_stmt_bind_param(stmt, bindParams) == 0,
                           "Failed to bind params: \n" + std::string(mysql_stmt_error(stmt)));
 
@@ -291,7 +291,7 @@ public:
 
             prepareResult();
 
-            doActualBind = false;
+            doExecPrepared = false;
         }
 
         int res = mysql_stmt_fetch(stmt);
@@ -514,7 +514,7 @@ public:
         }
     }
 
-    int64_t lastInsertId()
+    int64_t lastInsertId() override
     {
         NGREST_ASSERT(isConnected, "Not Initialized");
         return mysql_insert_id(&conn);

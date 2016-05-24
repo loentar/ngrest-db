@@ -167,7 +167,7 @@ public:
         value = res ? res : "";
     }
 
-    int64_t lastInsertId()
+    int64_t lastInsertId() override
     {
         NGREST_ASSERT(db->impl->conn, "Not Initialized");
         return sqlite3_last_insert_rowid(db->impl->conn);

@@ -10,3 +10,8 @@ if (HAS_MYSQL)
     add_subdirectory(mysql)
 endif()
 
+# Postgres
+if (HAS_POSTGRES)
+    add_subdirectory(postgres)
+endif()
+

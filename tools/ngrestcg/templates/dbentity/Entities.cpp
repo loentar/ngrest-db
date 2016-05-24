@@ -114,6 +114,7 @@ Int\
             $(.options.*pk||"false"), // pk
             $(.options.*unique||"false"), // unique
             $(.options.*autoincrement||"false"), // autoincrement
+            $(.options.*ignoreOnInsert||"false"), // ignore on insert
 ##ifneq($(.options.*fk),) // fk
 ##var fkTable $(.options.fk.!token/ /)
 ##var fkField $(.options.fk.!lasttoken/ /)

@@ -9,6 +9,9 @@
 #ifdef HAS_MYSQL
 #include <ngrest/db/MySqlDb.h>
 #endif
+#ifdef HAS_POSTGRES
+#include <ngrest/db/PostgresDb.h>
+#endif
 #include <ngrest/db/Table.h>
 
 #include "datatypes.h"
@@ -41,12 +44,12 @@ void example1(Db& db)
     // enabled by default
 //    users.setInsertFieldsInclusion({"id"}, ngrest::FieldsInclusion::Exclude);
 
-    users.insert({0, "John", "john@example.com", 0}); // id is ignored upon insertion
+    users.insert({0, "John", "john@example.com"}); // id is ignored upon insertion
 
     int id = users.lastInsertId();
 //    LogInfo() << "Last insert id: " << id;
 
-    User user = {0, "James", "james@example.com", 0};
+    User user = {0, "James", "james@example.com"};
     users.insert(user);
     // users.insert(user, {"id", "registered"}, ngrest::FieldsInclusion::Exclude); // for example
 
@@ -136,8 +139,8 @@ void example1(Db& db)
 
     // stream
 
-    User user1 = {0, "Martin", "martin@example.com", 0};
-    User user2 = {0, "Marta", "marta@example.com", 0};
+    User user1 = {0, "Martin", "martin@example.com"};
+    User user2 = {0, "Marta", "marta@example.com"};
 
     // insert
     users << user1 << user2;
@@ -197,6 +200,16 @@ int main()
         ngrest::MySqlDb mysqlDb({"test_ngrestdb", "ngrestdb", "ngrestdb"});
         ngrest::example::example1(mysqlDb);
         ngrest::LogInfo() << "MySQL driver test passed";
+#endif
+#ifdef HAS_POSTGRES
+        // must have db and user created using statements:
+        //   CREATE DATABASE test_ngrestdb;
+        //   CREATE USER ngrestdb WITH password 'ngrestdb';
+        //   GRANT ALL PRIVILEGES ON DATABASE test_ngrestdb TO ngrestdb;
+
+        ngrest::PostgresDb postgresDb({"test_ngrestdb", "ngrestdb", "ngrestdb"});
+        ngrest::example::example1(postgresDb);
+        ngrest::LogInfo() << "Postgres driver test passed";
 #endif
     } NGREST_CATCH_ALL
 }
