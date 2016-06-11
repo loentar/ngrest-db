@@ -242,7 +242,8 @@ std::string SQLiteDb::getCreateTableQuery(const Entity& entity) const
         if (!fieldsStr.empty())
             fieldsStr += ", ";
         fieldsStr += field.name + " ";
-        fieldsStr += getTypeName(field.type) + " ";
+        fieldsStr += getTypeName(field.type);
+        fieldsStr += " ";
         if (field.isPK)
             fieldsStr += "PRIMARY KEY ";
         if (field.isAutoincrement)
@@ -251,8 +252,13 @@ std::string SQLiteDb::getCreateTableQuery(const Entity& entity) const
             fieldsStr += "UNIQUE ";
         if (field.notNull)
             fieldsStr += "NOT NULL ";
-        if (!field.defaultValue.empty())
-            fieldsStr += "DEFAULT " + field.defaultValue;
+        if (!field.defaultValue.empty()) {
+            if (field.type == Field::DataType::String) {
+                fieldsStr += "DEFAULT \"" + field.defaultValue + "\"";
+            } else {
+                fieldsStr += "DEFAULT " + field.defaultValue;
+            }
+        }
     }
 
     return "CREATE TABLE IF NOT EXISTS " + entity.getTableName() + " (" + fieldsStr + ")";
@@ -260,18 +266,19 @@ std::string SQLiteDb::getCreateTableQuery(const Entity& entity) const
 
 const std::string& SQLiteDb::getTypeName(Field::DataType type) const
 {
-    static const int size = 6;
+    static const int size = static_cast<int>(Field::DataType::Last);
     static const std::string types[size] = {
         "VOID",
         "BOOLEAN",
         "INTEGER",
         "BIGINT",
         "DOUBLE",
+        "INTEGER",
         "TEXT"
     };
 
     const int pos = static_cast<int>(type);
-    return (pos > size || pos <= 0) ? types[0] : types[pos];
+    return (pos >= size || pos <= 0) ? types[0] : types[pos];
 }
 
 } // namespace ngrest

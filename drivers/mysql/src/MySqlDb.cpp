@@ -557,8 +557,13 @@ std::string MySqlDb::getCreateTableQuery(const Entity& entity) const
             fieldsStr += "UNIQUE ";
         if (field.notNull)
             fieldsStr += "NOT NULL ";
-        if (!field.defaultValue.empty())
-            fieldsStr += "DEFAULT " + field.defaultValue;
+        if (!field.defaultValue.empty()) {
+            if (field.type == Field::DataType::String) {
+                fieldsStr += "DEFAULT '" + field.defaultValue + "'";
+            } else {
+                fieldsStr += "DEFAULT " + field.defaultValue;
+            }
+        }
     }
 
     return "CREATE TABLE IF NOT EXISTS " + entity.getTableName() + " (" + fieldsStr + ")";
@@ -566,18 +571,19 @@ std::string MySqlDb::getCreateTableQuery(const Entity& entity) const
 
 const std::string& MySqlDb::getTypeName(Field::DataType type) const
 {
-    static const int size = 6;
+    static const int size = static_cast<int>(Field::DataType::Last);
     static const std::string types[size] = {
         "VOID",
         "TINYINT",
         "INTEGER",
         "BIGINT",
         "DOUBLE",
+        "INTEGER",
         "VARCHAR(256)"
     };
 
     const int pos = static_cast<int>(type);
-    return (pos > size || pos <= 0) ? types[0] : types[pos];
+    return (pos >= size || pos <= 0) ? types[0] : types[pos];
 }
 
 } // namespace ngrest

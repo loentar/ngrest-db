@@ -45,7 +45,9 @@ struct Field
         Int,
         BigInt,
         Float,
-        String
+        Enum,
+        String,
+        Last
     };
 
     DataType type;

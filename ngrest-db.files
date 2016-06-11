@@ -26,6 +26,10 @@ examples/example1/src/example1.cpp
 README.md
 scripts/ngrest-inject
 scripts/ngrest-trigger
+tests/CMakeLists.txt
+tests/test1/CMakeLists.txt
+tests/test1/src/test1.cpp
+tests/test1/src/test1.h
 tools/CMakeLists.txt
 tools/ngrestcg/CMakeLists.txt
 tools/ngrestcg/templates/dbentity/codegen.config

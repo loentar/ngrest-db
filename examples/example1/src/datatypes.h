@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include <ngrest/common/Nullable.h>
+
 namespace ngrest {
 namespace example {
 
@@ -33,6 +35,8 @@ struct Group
     int id;
 
     std::string name;
+
+    Nullable<std::string> comment;
 };
 
 // *table: users_to_groups

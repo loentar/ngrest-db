@@ -24,6 +24,8 @@
 #include <string>
 #include <tuple>
 
+#include <ngrest/common/Nullable.h>
+
 #include "QueryImpl.h"
 
 namespace ngrest {
@@ -54,6 +56,11 @@ public:
         impl->prepare(query);
     }
 
+
+    inline void bindNull(int arg)
+    {
+        impl->bindNull(arg);
+    }
 
     inline void bind(int arg, bool value)
     {
@@ -130,6 +137,16 @@ public:
     inline void bind(int arg, const std::string& value)
     {
         impl->bindString(arg, value);
+    }
+
+    template <typename T>
+    inline void bind(int arg, const Nullable<T>& value)
+    {
+        if (value.isNull()) {
+            impl->bindNull(arg);
+        } else {
+            bind(arg, *value);
+        }
     }
 
 
@@ -221,6 +238,16 @@ public:
     inline void result(int column, std::string& value)
     {
         impl->resultString(column, value);
+    }
+
+    template <typename T>
+    inline void result(int column, Nullable<T>& value)
+    {
+        if (impl->resultIsNull(column)) {
+            value.setNull();
+        } else {
+            result(column, value.get());
+        }
     }
 
 

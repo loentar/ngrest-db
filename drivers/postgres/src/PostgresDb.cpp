@@ -164,7 +164,7 @@ public:
 
         char* buffer = pool.grow(NGREST_NUM_TO_STR_BUFF_SIZE);
 
-        bool isOk = toCString(value, buffer, sizeof(NGREST_NUM_TO_STR_BUFF_SIZE));
+        bool isOk = toCString(value, buffer, NGREST_NUM_TO_STR_BUFF_SIZE);
         NGREST_ASSERT(isOk, "Failed to convert a number to string");
         const size_t buffLen = strlen(buffer) + 1;
 
@@ -184,7 +184,7 @@ public:
 
     void bindBool(int arg, bool value) override
     {
-        bindValue(arg, static_cast<char>(value ? 0 : 1));
+        bindValue(arg, static_cast<char>(value ? 1 : 0));
     }
 
     void bindInt(int arg, int value) override
@@ -259,7 +259,7 @@ public:
     T getResult(int column)
     {
         const char* valueStr = PQgetvalue(result, currentRow, column);
-        NGREST_ASSERT_NULL(valueStr); // FIXME: nullable support
+        NGREST_ASSERT_NULL(valueStr);
         T value = 0;
         NGREST_ASSERT(fromCString(valueStr, value), "Failed to convert from string");
         return value;
@@ -283,7 +283,7 @@ public:
     void resultString(int column, std::string& value) override
     {
         const char* valueStr = PQgetvalue(result, currentRow, column);
-        NGREST_ASSERT_NULL(valueStr); // FIXME: nullable support
+        NGREST_ASSERT_NULL(valueStr);
         int len = PQgetlength(result, currentRow, column);
         value.assign(valueStr, len);
     }
@@ -339,8 +339,13 @@ std::string PostgresDb::getCreateTableQuery(const Entity& entity) const
             fieldsStr += "UNIQUE ";
         if (field.notNull)
             fieldsStr += "NOT NULL ";
-        if (!field.defaultValue.empty())
-            fieldsStr += "DEFAULT " + field.defaultValue;
+        if (!field.defaultValue.empty()) {
+            if (field.type == Field::DataType::String) {
+                fieldsStr += "DEFAULT '" + field.defaultValue + "'";
+            } else {
+                fieldsStr += "DEFAULT " + field.defaultValue;
+            }
+        }
     }
 
     return "CREATE TABLE IF NOT EXISTS " + entity.getTableName() + " (" + fieldsStr + ")";
@@ -348,18 +353,19 @@ std::string PostgresDb::getCreateTableQuery(const Entity& entity) const
 
 const std::string& PostgresDb::getTypeName(Field::DataType type) const
 {
-    static const int size = 6;
+    static const int size = static_cast<int>(Field::DataType::Last);
     static const std::string types[size] = {
         "VOID",
         "BOOL",
         "INTEGER",
         "BIGINT",
-        "DOUBLE",
+        "DOUBLE PRECISION",
+        "INTEGER",
         "VARCHAR(256)"
     };
 
     const int pos = static_cast<int>(type);
-    return (pos > size || pos <= 0) ? types[0] : types[pos];
+    return (pos >= size || pos <= 0) ? types[0] : types[pos];
 }
 
 } // namespace ngrest

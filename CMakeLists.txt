@@ -89,7 +89,7 @@ check_include_file_cxx(sqlite3.h HAS_SQLITE)
 if (HAS_SQLITE)
     add_definitions(-DHAS_SQLITE)
 else()
-    message("No sqlite.h file found. SQLite driver disabled")
+    message("No sqlite3.h file found. SQLite driver disabled")
 endif()
 
 # MySQL

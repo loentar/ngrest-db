@@ -159,24 +159,24 @@ void example1(Db& db)
     NGREST_ASSERT(userList2.size() == 6, "Test failed");
 
 
-//    std::cout
-//    << resList0  << std::endl
-//    << "--------------------------"  << std::endl
-//    << resList1  << std::endl
-//    << "--------------------------"  << std::endl
-//    << resList2  << std::endl
-//    << "--------------------------"  << std::endl
-//    << resList5  << std::endl
-//    << "--------------------------"  << std::endl
-//    << resList6  << std::endl
-//    << "--------------------------"  << std::endl
-//    << resOne2   << std::endl
-//    << "--------------------------"  << std::endl
-//    << user << std::endl
-//    << "--------------------------"  << std::endl
-//    << userList1   << std::endl
-//    << "--------------------------"  << std::endl
-//    << userList2   << std::endl;
+    std::cout
+    << resList0  << std::endl
+    << "--------------------------"  << std::endl
+    << resList1  << std::endl
+    << "--------------------------"  << std::endl
+    << resList2  << std::endl
+    << "--------------------------"  << std::endl
+    << resList5  << std::endl
+    << "--------------------------"  << std::endl
+    << resList6  << std::endl
+    << "--------------------------"  << std::endl
+    << resOne2   << std::endl
+    << "--------------------------"  << std::endl
+    << user << std::endl
+    << "--------------------------"  << std::endl
+    << userList1   << std::endl
+    << "--------------------------"  << std::endl
+    << userList2   << std::endl;
 
 }
 
@@ -189,7 +189,6 @@ int main()
 #ifdef HAS_SQLITE
         ngrest::SQLiteDb sqliteDb("test.db");
         ngrest::example::example1(sqliteDb);
-        ngrest::LogInfo() << "SQLite driver test passed";
 #endif
 #ifdef HAS_MYSQL
         // must have db and user created using statements:
@@ -199,7 +198,6 @@ int main()
 
         ngrest::MySqlDb mysqlDb({"test_ngrestdb", "ngrestdb", "ngrestdb"});
         ngrest::example::example1(mysqlDb);
-        ngrest::LogInfo() << "MySQL driver test passed";
 #endif
 #ifdef HAS_POSTGRES
         // must have db and user created using statements:
@@ -209,7 +207,6 @@ int main()
 
         ngrest::PostgresDb postgresDb({"test_ngrestdb", "ngrestdb", "ngrestdb"});
         ngrest::example::example1(postgresDb);
-        ngrest::LogInfo() << "Postgres driver test passed";
 #endif
     } NGREST_CATCH_ALL
 }

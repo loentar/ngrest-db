@@ -79,33 +79,40 @@ const std::list< ::ngrest::Field>& $(.name)Entity::getFields() const
 ##foreach $(.fields)
         ::ngrest::Field {
             ::ngrest::Field::DataType::\
-##switch $(.dataType.type)
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+##var type $(.dataType.templateParams.templateParam1.type)
+##var name $(.dataType.templateParams.templateParam1.name)
+##else
+##var type $(.dataType.type)
+##var name $(.dataType.name)
+##endif
+##switch $($type)
 ##case string
 String\
 ##case enum
-Int\
+Enum\
 ##case generic
-##ifeq($(.dataType.name.!match/bool/),true)
+##ifeq($($name.!match/bool/),true)
 Bool\
 ##else
-##ifeq($(.dataType.name.!match/float/),true)
+##ifeq($($name.!match/float/),true)
 Float\
 ##else
-##ifeq($(.dataType.name.!match/double/),true)
+##ifeq($($name.!match/double/),true)
 Float\
 ##else // defaulting to int
-Int\
+Int  /* defaulted to int from $(.dataType) */ \
 ##endif // double/int
 ##endif // float
 ##endif // bool
 ##default
-##error Cannot serialize type: $(.dataType)
+##error Cannot serialize type #1: $(.dataType)
 ##endswitch
 , // type
             "$(.options.*type)", // DBMS type
             "$(.name)", // name
-##ifeq($(.options.*null),true)
-            "NULL", // default value
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+            "$(.options.*default||"NULL")", // default value
             false, // not null
 ##else
             "$(.options.*default)", // default value
@@ -166,17 +173,27 @@ void bindDataToQuery(Query& query, const $(struct.nsName)& data)
 {
 ##var index 0
 ##foreach $(.fields)
-##switch $(.dataType.type)
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+##var type $(.dataType.templateParams.templateParam1.type)
+##else
+##var type $(.dataType.type)
+##endif
+##switch $($type)
 ##case enum
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+    if (data.$(.name).isNull()) {
+        query.bindNull($($index));
+    } else {
+        query.bind($($index), static_cast<int>(*data.$(.name)));
+    }
+##else
     query.bind($($index), static_cast<int>(data.$(.name)));
+##endif
 ##case generic||string
     query.bind($($index), data.$(.name));
 ##default
-##error Cannot serialize type: $(.dataType)
+##error Cannot serialize type #2: $(.dataType)
 ##endswitch
-##ifeq($(.options.*null),true)
-##error TODO: nullable
-##endif
 \
 ##var index $($index.!inc)
 \
@@ -193,21 +210,32 @@ void bindDataToQuery(Query& query, const $(struct.nsName)& data, const std::bits
     int index = 0;
 ##var index 0
 ##foreach $(.fields)
-    if (includedFields[$($index)])
-##switch $(.dataType.type)
-##case enum
-      query.bind(index++, static_cast<int>(data.$(.name)));
-##case generic||string
-      query.bind(index++, data.$(.name));
-##default
-##error Cannot serialize type: $(.dataType)
-##endswitch
-##ifeq($(.options.*null),true)
-##error TODO: nullable
+    if (includedFields[$($index)]) {
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+##var type $(.dataType.templateParams.templateParam1.type)
+##else
+##var type $(.dataType.type)
 ##endif
+##switch $($type)
+##case enum
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+        if (data.$(.name).isNull()) {
+            query.bindNull(index++);
+        } else {
+            query.bind(index++, static_cast<int>(*data.$(.name)));
+        }
+##else
+        query.bind(index++, static_cast<int>(data.$(.name)));
+##endif
+##case generic||string
+        query.bind(index++, data.$(.name));
+##default
+##error Cannot serialize type #3: $(.dataType)
+##endswitch
 \
 ##var index $($index.!inc)
 \
+    }
 ##endfor
 }
 
@@ -215,17 +243,27 @@ void readDataFromQuery(Query& query, $(struct.nsName)& data)
 {
 ##var index 0
 ##foreach $(.fields)
-##switch $(.dataType.type)
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+##var type $(.dataType.templateParams.templateParam1.type)
+##else
+##var type $(.dataType.type)
+##endif
+##switch $($type)
 ##case enum
-    data.$(.name) = static_cast< $(.dataType) >(query->resultInt($($index)));
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+    if (query.resultIsNull($($index))) {
+        data.$(.name).setNull();
+    } else {
+        data.$(.name).get() = static_cast< $(.dataType.templateParams.templateParam1) >(query.resultInt($($index)));
+    }
+##else
+    data.$(.name) = static_cast< $(.dataType) >(query.resultInt($($index)));
+##endif
 ##case generic||string
     query.result($($index), data.$(.name));
 ##default
-##error Cannot serialize type: $(.dataType)
+##error Cannot serialize type #4: $(.dataType)
 ##endswitch
-##ifeq($(.options.*null),true)
-##error TODO: nullable
-##endif
 \
 ##var index $($index.!inc)
 \
@@ -237,21 +275,33 @@ void readDataFromQuery(Query& query, $(struct.nsName)& data, const std::bitset<$
     int index = 0;
 ##var index 0
 ##foreach $(.fields)
-    if (includedFields[$($index)])
-##switch $(.dataType.type)
+    if (includedFields[$($index)]) {
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+##var type $(.dataType.templateParams.templateParam1.type)
+##else
+##var type $(.dataType.type)
+##endif
+##switch $($type)
 ##case enum
-        data.$(.name) = static_cast< $(.dataType) >(query->resultInt(index++));
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+        if (data.$(.name).isNull()) {
+            data.$(.name).setNull();
+            ++index;
+        } else {
+            data.$(.name).get() = static_cast< $(.dataType.templateParams.templateParam1) >(query.resultInt(index++));
+        }
+##else
+        data.$(.name) = static_cast< $(.dataType) >(query.resultInt(index++));
+##endif
 ##case generic||string
         query.result(index++, data.$(.name));
 ##default
-##error Cannot serialize type: $(.dataType)
+##error Cannot serialize type #5: $(.dataType)
 ##endswitch
-##ifeq($(.options.*null),true)
-##error TODO: nullable
-##endif
 \
 ##var index $($index.!inc)
 \
+    }
 ##endfor
 }
 
@@ -267,11 +317,18 @@ void readDataFromQuery(Query& query, $(struct.nsName)& data, const std::bitset<$
 ##ifeq($(struct.isExtern),false)
 std::ostream& operator<<(std::ostream& out, const $(struct.nsName)& data)
 {
-    return out\
 ##foreach $(struct.fields)
- << "\t" << data.$(field.name)\
+##ifeq($(.dataType.type)-$(.dataType.name),template-Nullable)
+    if ((data.$(field.name).isNull())) {
+        out << "\tnull";
+    } else {
+        out << "\t" << *data.$(field.name);
+    }
+##else
+    out << "\t" << data.$(field.name);
+##endif
 ##endfor
-;
+    return out;
 }
 
 ##endif

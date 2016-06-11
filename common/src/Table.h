@@ -70,10 +70,9 @@ public:
 
         ResultStreamer& operator>>(std::list<DataType>& result)
         {
-            DataType data;
             while (table.query.next()) {
-                readDataFromQuery(table.query, data);
-                result.push_back(data);
+                result.push_back(DataType());
+                readDataFromQuery(table.query, result.back());
             }
 
             return *this;
@@ -209,10 +208,9 @@ public:
         std::list<DataType> result;
         query.reset();
         query.prepare("SELECT " + entity.getFieldsNamesStr() + " FROM " + entity.getTableName());
-        DataType data;
         while (query.next()) {
-            readDataFromQuery(query, data);
-            result.push_back(data);
+            result.push_back(DataType());
+            readDataFromQuery(query, result.back());
         }
 
         return result;
@@ -226,10 +224,9 @@ public:
         query.bindAll(params...);
 
         std::list<DataType> result;
-        DataType data;
         while (query.next()) {
-            readDataFromQuery(query, data);
-            result.push_back(data);
+            result.push_back(DataType());
+            readDataFromQuery(query, result.back());
         }
 
         return result;
@@ -252,10 +249,9 @@ public:
         query.bindAll(params...);
 
         std::list<DataType> result;
-        DataType data;
         while (query.next()) {
-            readDataFromQuery(query, data, includedFields);
-            result.push_back(data);
+            result.push_back(DataType());
+            readDataFromQuery(query, result.back(), includedFields);
         }
 
         return result;

@@ -302,7 +302,3 @@ ngrest
 Open ngrest services tester http://localhost:9098/ngrest/service/Notes and try implemented operations: add, get, find, etc...
 
 The DB will be stored in `.ngrest/local/build/notes.db`.
-
-
-## TODO: 
- - implement nullable, needs ngrest support
