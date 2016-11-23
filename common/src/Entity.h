@@ -27,7 +27,7 @@
 namespace ngrest {
 
 struct Field;
-struct Db;
+class Db;
 
 //! parent class for code-generated entities
 class Entity
