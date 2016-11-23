@@ -23,6 +23,7 @@
 class $(struct.name)Entity: public ::ngrest::Entity
 {
 public:
+    $(struct.name)Entity();
     const std::string& getName() const override;
     const std::string& getTableName() const override;
     const std::list<std::string>& getFieldsNames() const override;

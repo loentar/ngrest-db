@@ -19,6 +19,10 @@
 
 // $(.name)
 
+$(struct.name)Entity::$(struct.name)Entity()
+{
+}
+
 const std::string& $(.name)Entity::getName() const
 {
     const static std::string name("$(.name)");
