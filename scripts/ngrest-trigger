@@ -38,9 +38,9 @@ case $1 in
 
     for service in ${services[@]}
     do
-      # bash 3.1 compat
-      service_lo=$(tr '[:upper:]' '[:lower:]' <<< "$service")
-      service_up=$(tr '[:lower:]' '[:upper:]' <<< "$service")
+      svc=${service##*.}
+      service_lo=$(tr '[:upper:]' '[:lower:]' <<< "$svc")
+      service_up=$(tr '[:lower:]' '[:upper:]' <<< "$svc")
       cp -f $service_lo/CMakeLists.txt $service_lo/CMakeLists.txt~
       tmp=$(mktemp)
       cat >$tmp << EOF
@@ -75,8 +75,8 @@ include_directories(\${PROJECT_SOURCE_DIR} \${${service_up}_DB_CODEGEN_DIR})
 ### ngrest-db END
 EOF
 
-      sed -i '/list.*APPEND.*CODEGEN_SOURCES/r '"$tmp" $service_lo/CMakeLists.txt
-      rm -f "$tmp"
+      sed -i- '/list.*APPEND.*CODEGEN_SOURCES/r '"$tmp" $service_lo/CMakeLists.txt
+      rm -f "$tmp" $service_lo/CMakeLists.txt-
       cat >>$service_lo/CMakeLists.txt << EOF
 ### ngrest-db BEGIN
 
@@ -91,7 +91,8 @@ EOF
   remove)
     for service in ${services[@]}
     do
-      service_lo=$(tr '[:upper:]' '[:lower:]' <<< "$service")
+      svc=${service##*.}
+      service_lo=$(tr '[:upper:]' '[:lower:]' <<< "$svc")
       sed -i~ '/### ngrest-db BEGIN/,/### ngrest-db END/d' $service_lo/CMakeLists.txt
     done
     ;;
