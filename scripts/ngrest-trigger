@@ -8,7 +8,7 @@ help() {
   echo "Usage:"
   echo "  ngrest add loentar/ngrest-db <driver>" >&2
   echo "  ngrest remove loentar/ngrest-db" >&2
-  echo "  supported drivers are: sqlite" >&2
+  echo "  supported drivers are: sqlite, mysql, postgres" >&2
 }
 
 if [ -z "${1:-}" ]
@@ -29,7 +29,7 @@ case $1 in
       exit 1
     fi
 
-    if [ "$2" != "sqlite" ]
+    if [ "$2" != "sqlite" -a "$2" != "mysql" -a "$2" != "postgres" ]
     then
       echo "Unsupported DB driver: $2." >&2
       help
