@@ -23,10 +23,11 @@ DBMS supported:
 // *table: users
 struct User
 {
-    // be default all the fields are not null
+    // by default all the fields are not null
+    // to make field nullable wrap it into ngrest::Nullable
 
     // *pk: true
-    // *autoincrenent: true
+    // *autoincrement: true
     int id;
 
     std::string name;
