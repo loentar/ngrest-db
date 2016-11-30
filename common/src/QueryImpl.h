@@ -32,10 +32,10 @@ public:
 
     virtual void reset() = 0;
 
-    inline void query(const std::string& query)
+    inline bool query(const std::string& query)
     {
         prepare(query);
-        next();
+        return next();
     }
 
     virtual void prepare(const std::string& query) = 0;

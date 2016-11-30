@@ -46,9 +46,9 @@ public:
         impl->reset();
     }
 
-    inline void query(const std::string& query)
+    inline bool query(const std::string& query)
     {
-        impl->query(query);
+        return impl->query(query);
     }
 
     inline void prepare(const std::string& query)
