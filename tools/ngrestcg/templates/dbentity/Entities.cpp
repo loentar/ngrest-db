@@ -143,7 +143,7 @@ Int  /* defaulted to int from $(.dataType) */ \
 ##endif
             new ::ngrest::ForeignKey {
                 "$(.options.*key||"$(struct.options.table)_fk_$($fkTable)_$($fkField)")",
-                getEntityByDataType< $($entity) >(),
+                ::ngrest::getEntityByDataType< $($entity) >(),
                 "$($fkField)",
                 "$(.options.*onDelete)",
                 "$(.options.*onUpdate)"
