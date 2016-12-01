@@ -62,6 +62,11 @@ public:
         impl->bindNull(arg);
     }
 
+    inline void bind(int arg, std::nullptr_t)
+    {
+        impl->bindNull(arg);
+    }
+
     inline void bind(int arg, bool value)
     {
         impl->bindBool(arg, value);
