@@ -213,12 +213,12 @@ And `notes/src/Notes.cpp` like this:
 
 ```C++
 #include <ngrest/db/SQLiteDb.h>
-#include <ngrest/db/Table.h>
+#include <ngrest/db/DbManager.h>
 
 #include "Notes.h"
 
 // singleton to access notes db
-class NotesDb
+class NotesDb: public ::ngrest::DbManager< ::ngrest::SQLiteDb >
 {
 public:
     static NotesDb& inst()
@@ -227,50 +227,36 @@ public:
         return instance;
     }
 
-    ngrest::Db& db()
-    {
-        return notesDb;
-    }
-
-    ngrest::Table<Note>& notes()
-    {
-        return notesTable;
-    }
-
 private:
     NotesDb():
-        notesDb("notes.db"),
-        notesTable(notesDb)
+        DbManager("notes.db")
     {
         // perform DB initialization here
-        notesTable.create(); // create table if not exist
+        getTable<Note>().create(); // create table if not exist
     }
-
-    ngrest::SQLiteDb notesDb;
-    ngrest::Table<Note> notesTable;
 };
 
 
 int Notes::add(const std::string& title, const std::string& text)
 {
-    return NotesDb::inst().notes()
+    return NotesDb::inst().getTable<Note>()
             .insert({0, title, text})
             .lastInsertId();
 }
 
 void Notes::remove(int id)
 {
-    NotesDb::inst().notes().deleteWhere("id = ?", id);
+    NotesDb::inst().getTable<Note>().deleteWhere("id = ?", id);
 }
 
 Note Notes::get(int id)
 {
-    return NotesDb::inst().notes().selectOne("id = ?", id);
+    return NotesDb::inst().getTable<Note>().selectOne("id = ?", id);
 }
 
 std::list<int> Notes::ids()
 {
-    return NotesDb::inst().notes().selectTuple<int>({"id"});
+    return NotesDb::inst().getTable<Note>().selectTuple<int>({"id"});
 }
 
 std::unordered_map<int, std::string> Notes::list()
@@ -290,7 +276,7 @@ std::unordered_map<int, std::string> Notes::list()
 
 std::list<Note> Notes::find(const std::string& title)
 {
-    return NotesDb::inst().notes().select("title LIKE ?", "%" + title + "%");
+    return NotesDb::inst().getTable<Note>().select("title LIKE ?", "%" + title + "%");
 }
 ```
 
