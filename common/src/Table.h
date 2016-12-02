@@ -47,8 +47,14 @@ enum class FieldsInclusion
     Exclude
 };
 
+class TableBase
+{
+public:
+    virtual ~TableBase() {}
+};
+
 template <typename DataType>
-class Table
+class Table: public TableBase
 {
 public:
     typedef std::bitset<getEntityFieldsCount<DataType>()> FieldsSet;

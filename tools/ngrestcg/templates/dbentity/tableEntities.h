@@ -5,3 +5,34 @@
 ##foreach $(project.interfaces)
 #include "$(interface.name)Entities.h"
 ##endfor
+
+##var entityIndex 0
+namespace ngrest {
+
+##foreach $(project.interfaces)
+##foreach $(.structs)
+##ifeq($(struct.isExtern),false)
+
+template <>
+constexpr unsigned long getEntityIndex< $(struct.nsName) >()
+{
+    return $($entityIndex);
+}
+
+template <>
+struct DataTypeWrapper<$($entityIndex)>
+{
+    typedef $(struct.nsName) type;
+};
+
+##var entityIndex $($entityIndex.!inc)
+##endif
+##endfor
+##endfor
+
+constexpr unsigned long getEntityCount()
+{
+    return $($entityIndex);
+}
+
+}

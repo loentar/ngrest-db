@@ -29,6 +29,9 @@ namespace ngrest {
 struct Field;
 class Db;
 
+template <int>
+struct DataTypeWrapper;
+
 //! parent class for code-generated entities
 class Entity
 {
@@ -48,6 +51,9 @@ const Entity& getEntityByDataType(); // implemented in codegenerated code
 
 template <typename DataType>
 constexpr unsigned long getEntityFieldsCount(); // implemented in codegenerated code
+
+template <typename DataType>
+constexpr unsigned long getEntityIndex(); // implemented in codegenerated code
 
 } // namespace ngrest
 

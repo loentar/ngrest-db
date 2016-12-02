@@ -2,6 +2,7 @@ CMakeLists.txt
 common/CMakeLists.txt
 common/src/Db.cpp
 common/src/Db.h
+common/src/DbManager.h
 common/src/Entity.h
 common/src/Field.h
 common/src/Query.cpp
