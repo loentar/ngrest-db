@@ -57,6 +57,7 @@ public:
 
     std::string getCreateTableQuery(const Entity& entity) const override;
     const std::string& getTypeName(Field::DataType type) const override;
+    std::string getExistingTablesQuery() const override;
 
 private:
     MySqlDb(const MySqlDb&);

@@ -39,6 +39,7 @@ public:
 
     virtual std::string getCreateTableQuery(const Entity& entity) const = 0;
     virtual const std::string& getTypeName(Field::DataType type) const = 0;
+    virtual std::string getExistingTablesQuery() const = 0;
 };
 
 } // namespace ngrest

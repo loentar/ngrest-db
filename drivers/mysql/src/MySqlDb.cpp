@@ -546,8 +546,8 @@ std::string MySqlDb::getCreateTableQuery(const Entity& entity) const
 
     for (const Field& field : entity.getFields()) {
         if (!fieldsStr.empty())
-            fieldsStr += ", ";
-        fieldsStr += field.name + " ";
+            fieldsStr += ",\n";
+        fieldsStr += "  " + field.name + " ";
         fieldsStr += (!field.dbType.empty() ? field.dbType : getTypeName(field.type)) + " ";
         if (field.isPK)
             fieldsStr += "PRIMARY KEY ";
@@ -563,6 +563,13 @@ std::string MySqlDb::getCreateTableQuery(const Entity& entity) const
             } else {
                 fieldsStr += "DEFAULT " + field.defaultValue;
             }
+        }
+        if (field.fk) {
+            fieldsStr += " FOREIGN KEY(" + field.name + ") REFERENCES " + field.fk->entity.getTableName() + "(" + field.fk->fieldName + ")";
+            if (!field.fk->onDelete.empty())
+                fieldsStr += " ON DELETE " + field.fk->onDelete;
+            if (!field.fk->onUpdate.empty())
+                fieldsStr += " ON UPDATE " + field.fk->onUpdate;
         }
     }
 
@@ -584,6 +591,11 @@ const std::string& MySqlDb::getTypeName(Field::DataType type) const
 
     const int pos = static_cast<int>(type);
     return (pos >= size || pos <= 0) ? types[0] : types[pos];
+}
+
+std::string MySqlDb::getExistingTablesQuery() const
+{
+    return "SHOW TABLES";
 }
 
 } // namespace ngrest

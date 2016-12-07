@@ -237,11 +237,12 @@ QueryImpl* SQLiteDb::newQuery()
 std::string SQLiteDb::getCreateTableQuery(const Entity& entity) const
 {
     std::string fieldsStr;
+    std::string fks;
 
     for (const Field& field : entity.getFields()) {
         if (!fieldsStr.empty())
-            fieldsStr += ", ";
-        fieldsStr += field.name + " ";
+            fieldsStr += ",\n";
+        fieldsStr += "  " + field.name + " ";
         fieldsStr += getTypeName(field.type);
         fieldsStr += " ";
         if (field.isPK)
@@ -259,9 +260,16 @@ std::string SQLiteDb::getCreateTableQuery(const Entity& entity) const
                 fieldsStr += "DEFAULT " + field.defaultValue;
             }
         }
+        if (field.fk) {
+            fks += ",\n FOREIGN KEY(" + field.name + ") REFERENCES " + field.fk->entity.getTableName() + "(" + field.fk->fieldName + ")";
+            if (!field.fk->onDelete.empty())
+                fks += " ON DELETE " + field.fk->onDelete;
+            if (!field.fk->onUpdate.empty())
+                fks += " ON UPDATE " + field.fk->onUpdate;
+        }
     }
 
-    return "CREATE TABLE IF NOT EXISTS " + entity.getTableName() + " (" + fieldsStr + ")";
+    return "CREATE TABLE IF NOT EXISTS " + entity.getTableName() + " (\n" + fieldsStr + fks + "\n)";
 }
 
 const std::string& SQLiteDb::getTypeName(Field::DataType type) const
@@ -280,5 +288,12 @@ const std::string& SQLiteDb::getTypeName(Field::DataType type) const
     const int pos = static_cast<int>(type);
     return (pos >= size || pos <= 0) ? types[0] : types[pos];
 }
+
+std::string SQLiteDb::getExistingTablesQuery() const
+{
+    return "SELECT name FROM sqlite_master WHERE type='table'";
+}
+
+
 
 } // namespace ngrest

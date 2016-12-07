@@ -51,6 +51,8 @@ class TableBase
 {
 public:
     virtual ~TableBase() {}
+    virtual const Entity& getEntity() const = 0;
+    virtual void create() = 0;
 };
 
 template <typename DataType>
@@ -104,7 +106,12 @@ public:
             insertInclusion = FieldsInclusion::Exclude;
     }
 
-    void create()
+    const Entity& getEntity() const override
+    {
+        return entity;
+    }
+
+    void create() override
     {
         query.query(db.getCreateTableQuery(entity));
     }
@@ -115,11 +122,33 @@ public:
         insertInclusion = inclusion;
     }
 
+    const std::set<std::string>& getInsertFields() const
+    {
+        return insertFields;
+    }
+
+    FieldsInclusion getInsertFieldsInclusion() const
+    {
+        return insertInclusion;
+    }
+
+    void setInsertFieldsInclusion(FieldsInclusion inclusion)
+    {
+        insertInclusion = inclusion;
+    }
+
     void resetInsertFieldsInclusion()
     {
         insertInclusion = FieldsInclusion::NotSet;
     }
 
+    Table<DataType>& operator<<(FieldsInclusion inclusion)
+    {
+        setInsertFieldsInclusion(inclusion);
+        return *this;
+    }
+
+    // insertion
     Table<DataType>& insert(const DataType& item)
     {
         if (insertInclusion == FieldsInclusion::NotSet) {

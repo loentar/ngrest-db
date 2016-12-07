@@ -318,11 +318,12 @@ QueryImpl* PostgresDb::newQuery()
 std::string PostgresDb::getCreateTableQuery(const Entity& entity) const
 {
     std::string fieldsStr;
+    std::string fks;
 
     for (const Field& field : entity.getFields()) {
         if (!fieldsStr.empty())
-            fieldsStr += ", ";
-        fieldsStr += field.name + " ";
+            fieldsStr += ",\n";
+        fieldsStr += "  " + field.name + " ";
 
         if (field.dbType.empty()) {
             if (field.isAutoincrement) {
@@ -346,6 +347,13 @@ std::string PostgresDb::getCreateTableQuery(const Entity& entity) const
                 fieldsStr += "DEFAULT " + field.defaultValue;
             }
         }
+        if (field.fk) {
+            fieldsStr += " REFERENCES " + field.fk->entity.getTableName() + "(" + field.fk->fieldName + ")";
+            if (!field.fk->onDelete.empty())
+                fieldsStr += " ON DELETE " + field.fk->onDelete;
+            if (!field.fk->onUpdate.empty())
+                fieldsStr += " ON UPDATE " + field.fk->onUpdate;
+        }
     }
 
     return "CREATE TABLE IF NOT EXISTS " + entity.getTableName() + " (" + fieldsStr + ")";
@@ -366,6 +374,13 @@ const std::string& PostgresDb::getTypeName(Field::DataType type) const
 
     const int pos = static_cast<int>(type);
     return (pos >= size || pos <= 0) ? types[0] : types[pos];
+}
+
+std::string PostgresDb::getExistingTablesQuery() const
+{
+    return "SELECT table_name FROM information_schema.tables"
+    " WHERE table_catalog = '" + impl->settings.db + "' AND table_type = 'BASE TABLE' AND table_schema = 'public'"
+    " ORDER BY table_name";
 }
 
 } // namespace ngrest

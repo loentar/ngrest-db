@@ -145,8 +145,8 @@ Int  /* defaulted to int from $(.dataType) */ \
                 "$(.options.*key||"$(struct.options.table)_fk_$($fkTable)_$($fkField)")",
                 ::ngrest::getEntityByDataType< $($entity) >(),
                 "$($fkField)",
-                "$(.options.*onDelete)",
-                "$(.options.*onUpdate)"
+                "$(.options.*onDelete||interface.*defaultOnDelete)",
+                "$(.options.*onUpdate||interface.*defaultOnUpdate)"
             }
 
 ##else
