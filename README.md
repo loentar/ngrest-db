@@ -232,7 +232,7 @@ private:
         DbManager("notes.db")
     {
         // perform DB initialization here
-        getTable<Note>().create(); // create table if not exist
+        createAllTables(); // create all missing tables
     }
 };
 
@@ -289,3 +289,29 @@ ngrest
 Open ngrest services tester http://localhost:9098/ngrest/service/Notes and try implemented operations: add, get, find, etc...
 
 The DB will be stored in `.ngrest/local/build/notes.db`.
+
+## Initialize newly created DB schema with data once
+
+If you need to place some initial records in your DB upon creation, this snippet can be used:
+
+```
+MyDbManager::MyDbManager():
+    DbManager("mydb.sqlite")
+{
+    std::list<std::string> createdTables;
+
+    if (createAllTables(&createdTables)) {
+        for (const std::string& name : createdTables) { // iterate through newly added tables
+            if (name == "some_table") { // table name
+                getTable<SomeTable>() // place initial data to it
+                        << ngrest::FieldsInclusion::NotSet // to insert with ids
+                        << Category{1, "One"}
+                        << Category{2, "Two"}
+                        << Category{3, "Three"}
+                        << ngrest::FieldsInclusion::Exclude; // next inserts will ignore id
+            }
+        }
+    }
+}
+
+```
