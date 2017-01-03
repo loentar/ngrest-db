@@ -586,7 +586,7 @@ const std::string& MySqlDb::getTypeName(Field::DataType type) const
         "BIGINT",
         "DOUBLE",
         "INTEGER",
-        "VARCHAR(256)"
+        "VARCHAR(255)"
     };
 
     const int pos = static_cast<int>(type);

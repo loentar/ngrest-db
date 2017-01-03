@@ -166,7 +166,7 @@ int main()
 #ifdef HAS_MYSQL
         // must have db and test1 created using statements:
         //   CREATE DATABASE test_ngrestdb;
-        //   CREATE TEST1 'ngrestdb'@'localhost' IDENTIFIED BY 'ngrestdb';
+        //   CREATE USER 'ngrestdb'@'localhost' IDENTIFIED BY 'ngrestdb';
         //   GRANT ALL PRIVILEGES ON test_ngrestdb TO 'ngrestdb'@'localhost' WITH GRANT OPTION;
 
         ngrest::MySqlDb mysqlDb({"test_ngrestdb", "ngrestdb", "ngrestdb"});
@@ -176,7 +176,7 @@ int main()
 #ifdef HAS_POSTGRES
         // must have db and test1 created using statements:
         //   CREATE DATABASE test_ngrestdb;
-        //   CREATE TEST1 ngrestdb WITH password 'ngrestdb';
+        //   CREATE USER ngrestdb WITH password 'ngrestdb';
         //   GRANT ALL PRIVILEGES ON DATABASE test_ngrestdb TO ngrestdb;
 
         ngrest::PostgresDb postgresDb({"test_ngrestdb", "ngrestdb", "ngrestdb"});
