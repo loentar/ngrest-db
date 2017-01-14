@@ -315,3 +315,7 @@ MyDbManager::MyDbManager():
 }
 
 ```
+
+## Support
+
+Feel free to ask ngrest and ngrest-db related questions here on the [Google groups](https://groups.google.com/forum/#!forum/ngrest).
