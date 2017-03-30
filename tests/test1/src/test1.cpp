@@ -165,9 +165,9 @@ int main()
 
 #ifdef HAS_MYSQL
         // must have db and test1 created using statements:
-        //   CREATE DATABASE test_ngrestdb;
+        //   CREATE DATABASE test_ngrestdb CHARACTER SET utf8 COLLATE utf8_general_ci;
         //   CREATE USER 'ngrestdb'@'localhost' IDENTIFIED BY 'ngrestdb';
-        //   GRANT ALL PRIVILEGES ON test_ngrestdb TO 'ngrestdb'@'localhost' WITH GRANT OPTION;
+        //   GRANT ALL PRIVILEGES ON test_ngrestdb.* TO 'ngrestdb'@'localhost' WITH GRANT OPTION;
 
         ngrest::MySqlDb mysqlDb({"test_ngrestdb", "ngrestdb", "ngrestdb"});
         ngrest::test::test1(mysqlDb, "MySQL");
